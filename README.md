@@ -9,7 +9,74 @@ The [Airbus Ship Detection Challenge](https://www.kaggle.com/competitions/airbus
 
 ## Installation and Usage
 
+You can utilize this project by following these steps:
+
+1. Download the repository to your desired working directory: </br>
+  `git clone https://github.com/kafkaGen/Airbus && cd Airbus`
+
+2. Build the Docker image: </br>
+  `docker build . -t airbus`
+
+3. (Optionaly) Train the models: </br>
+`docker run -it --gpus all --rm -v path/to/models:/airbus/models -v path/to/train/data:/airbus/data/train_v2  airbus python train.py`
+
+> Note: All hyperparameters for model training and architecture can be found in the Config class in the settings.config file. Modify this class to make any desired changes.
+
+4. Predict the masks for images in a specified input folder and save them to an output folder (each mask will have the same name as its corresponding image): </br>
+  `docker run -it --gpus all --rm -v path/to/models:/airbus/models -v path/to/input/images:/airbus/input -v path/to/output/folder:/airbus/output airbus python inference.py --input input --output output`
+
+5. If you simply want to evaluate its performance, you can run the model on pre-stored images from the inference_input_test folder in the project: </br>
+  `docker run -it --gpus all --rm -v path/to/output/folder:/airbus/output airbus python inference.py --input inference_input_test --output output`
+
+6. Once you are finished, remove the Docker image: </br>
+  `docker rmi airbus`
+
+> Note: The --gpus all flag enables TensorFlow to utilize the GPU if the appropriate NVIDIA-Docker setup is in place.
+
+> Note: You can remove the -v path/to/models:/airbus/models part from the command if you don't need to retrain the models.
+
+> Note: Make sure to replace path/to/models, path/to/train/data, path/to/input/images, and path/to/output/folder with the absolute paths to these respective folders.
+
 ### Project structure
+
+```
+├── data                                    - folder containing all training data
+│   ├── hue.csv                             - mapping of the number of ships on the segmentation dataset
+│   ├── labels.csv                          - label mapping for the classification dataset
+│   ├── masks.csv                           - rle decoded masks for the segmentation dataset
+│   ├── sample_submission_v2.csv            - sample submission for the competition
+│   ├── test_v2                             - folder containing test images
+│   │   └── ...
+│   ├── train_ship_segmentations_v2.csv     - raw images with rle masks
+│   └── train_v2                            - folder containing training images
+│       └── ...
+├── Dockerfile
+├── inference_input_test                    - example images
+│   └── ...
+├── inference_output_test                   - example model output images
+│   └── ...
+├── inference.py                            - script to make predictions on a given image folder
+├── models                                  - folder containing model weights
+│   ├── resnet.h5
+│   └── unet.h5
+├── notebooks                               - notebooks folder
+│   ├── eda.ipynb                           - data exploration
+│   ├── resnet.ipynb                        - classificator exploration
+│   └── unet.ipynb                          - segmentator exploration
+├── README.md
+├── requirements.txt
+├── settings                                - folder containing configuration files
+│   └── config.py                           - config file with model hyperparameters
+├── src                                     - source code folder
+│   ├── dataset.py                          
+│   ├── metrics.py                  
+│   ├── model.py
+│   └── utils.py
+├── submission
+│   └── submission.csv
+├── submission.py                           - script for preparing submission on the test dataset from the competition
+└── train.py                               
+```
 
 ## Dataset
 
@@ -76,7 +143,11 @@ During the training phase, I encountered various challenges and identified areas
 
 - In order to achieve a reliable solution quickly, I initially proposed the use of two separate models, a classifier and a segmentator. However, a more efficient approach emerged, suggesting the utilization of the pretrained U-Net encoder with additional layers on top for classification, rather than training a new classifier from scratch. A more advanced approach is to perform classification directly within the U-Net bottleneck, eliminating the need for additional processing time in a separate classifier.
 
-- EDA, I observed that the dataset may consist of images from different sources (satellites) with varying characteristics. It might be beneficial to group these images based on their source and train separate models for each type, or at least apply different preprocessing techniques based on the image source.
+- To further improve the performance of the classifier, allocate more resources and time to its training in order to achieve satisfactory results.
+
+- To ensure more stable training, consider using a larger batch size, bacause I was limited to use batch size of 16.
+
+- During EDA I observed that the dataset may consist of images from different sources (satellites) with varying characteristics. It might be beneficial to group these images based on their source and train separate models for each type, or at least apply different preprocessing techniques based on the image source.
 
 - Due to limited computational resources, I did not extensively experiment with different architecture designs. Exploring U-Net models with fewer layers could potentially mitigate overfitting issues, while deeper U-Net architectures might better capture the distinctions between ships and coastlines.
  

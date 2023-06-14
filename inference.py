@@ -27,6 +27,11 @@ if __name__ == '__main__':
     is_valid_directory(parser, args.input)
     is_valid_directory(parser, args.output)
     
+    if tf.config.list_physical_devices('GPU'):
+        print("TensorFlow has detected GPUs.")
+    else:
+        print("No GPUs found. TensorFlow is using CPU.")
+    
     resnet = ResNet().build_model()
     resnet.load_weights(os.path.join(Config.model_path, 'resnet.h5'))
     

@@ -21,6 +21,11 @@ if __name__ == '__main__':
     parser.add_argument('--segmentator_train', type=str,
                         default='y')
     args = parser.parse_args()
+    
+    if tf.config.list_physical_devices('GPU'):
+        print("TensorFlow has detected GPUs.")
+    else:
+        print("No GPUs found. TensorFlow is using CPU.")
 
     if args.classificator_train in ['y', 'yes']:
         

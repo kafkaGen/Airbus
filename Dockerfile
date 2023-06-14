@@ -8,10 +8,10 @@ COPY models/ /airbus/models/
 COPY settings/ /airbus/settings/
 COPY src/ /airbus/src/
 COPY notebooks/ /airbus/notebooks
+COPY inference_input_test /airbus/inference_input_test
 WORKDIR /airbus
 
 RUN pip install --upgrade pip
-#RUN pip install opencv-python-headless==4.7.0.72
 RUN pip install -r requirements.txt
 
 ENV CUDA_VISIBLE_DEVICES=all

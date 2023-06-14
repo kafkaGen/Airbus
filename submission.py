@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--test_dir_path', type=str,
                         default=Config.test_path)
     parser.add_argument('--submission_dir_path', type=str,
-                        default='./')
+                        default='submission')
     args = parser.parse_args()
     
     # validate input parameters
@@ -41,14 +41,14 @@ if __name__ == '__main__':
     # segment prediction
     unet = ResNetUnet().build_model()
     unet.load_weights(args.segmentator_path)
-    segmentation_pred = unet.predict(dataset.take(20))
+    segmentation_pred = unet.predict(dataset)
     segmentation_pred = tf.cast(segmentation_pred >= Config.threshold, tf.float32)
     segmentation_pred = tf.round(segmentation_pred)
     
     # classification prediction
     resnet = ResNet().build_model()
     resnet.load_weights(args.classificator_path)
-    classification_pred = resnet.predict(dataset.take(20))
+    classification_pred = resnet.predict(dataset)
     classification_pred = classification_pred.flatten()
     
     # prepare submition
